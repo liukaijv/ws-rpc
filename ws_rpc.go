@@ -212,12 +212,16 @@ func NewEndpoint(conn *websocket.Conn, registry *Registry) *Endpoint {
 	return e
 }
 
-func NewClient(conn *websocket.Conn) *Endpoint {
+func NewClient(urlStr string, header http.Header) (*Endpoint, error) {
+	conn, _, err := websocket.DefaultDialer.Dial(urlStr, header)
+	if err != nil {
+		return nil, err
+	}
 	e := &Endpoint{}
 	e.conn = conn
 	e.client.pending = make(map[uint64]*rpc.Call)
 	go e.Serve()
-	return e
+	return e, nil
 }
 
 func NewServer(conn *websocket.Conn, registry *Registry) *Endpoint {
@@ -317,6 +321,10 @@ func (e *Endpoint) Serve() error {
 			return err
 		}
 	}
+}
+
+func (e *Endpoint) Close() error {
+	return e.conn.Close()
 }
 
 func (e *Endpoint) send(msg *Message) error {

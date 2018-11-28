@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"github.com/gorilla/websocket"
 	"github.com/liukaijv/ws-rpc"
 	"github.com/liukaijv/ws-rpc/examples/go/data"
 	"log"
@@ -19,13 +18,13 @@ func main() {
 	u := url.URL{Scheme: "ws", Host: *addr, Path: "/ws"}
 	log.Printf("connecting to %s", u.String())
 
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
-	if err != nil {
-		log.Fatal("dial:", err)
-	}
-	defer conn.Close()
+	endpoint, err := ws_rpc.NewClient(u.String(), nil)
 
-	endpoint := ws_rpc.NewClient(conn)
+	if err != nil {
+		log.Fatal("NewClient:", err)
+	}
+
+	defer endpoint.Close()
 
 	var reply data.Outputting
 
